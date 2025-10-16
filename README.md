@@ -19,6 +19,19 @@ docs/      # Project documentation portal
 ./scripts/setup.sh
 ```
 
+
+## Architecture Overview
+
+```mermaid
+graph TD
+    User((User)) --> FE[SvelteKit Frontend]
+    FE -->|REST / WebSocket| BE[FastAPI Backend]
+    BE -->|Hybrid Query| LR[LightRAG Engine]
+    LR -->|GraphML + Vectors| Storage[(lightrag_storage)]
+    BE -->|Contextual Subgraph| FE
+    FE -->|Animated Graph + Chat| User
+```
+
 The setup script installs Python dependencies via `uv`, prepares LightRAG directories, creates a `.env` scaffold, and installs frontend packages.
 
 ### 1. Configure Environment

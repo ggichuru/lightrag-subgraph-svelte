@@ -13,6 +13,19 @@ This guide collects common operational tasks, production considerations, and fix
 | Trigger ingestion | `POST /api/documents/ingest` or use the UI panel |
 | Check ingestion status | `GET /api/documents/ingest/status` |
 
+## Runbook Overview
+
+```mermaid
+flowchart LR
+    Install[Setup Script] --> Configure[Configure backend/.env]
+    Configure --> Backend[Start Backend]
+    Configure --> Frontend[Start Frontend]
+    Backend --> Ingest[Ingest Documents]
+    Frontend --> Ingest
+    Ingest --> Monitor[Check /api/documents/ingest/status]
+    Monitor --> Chat[Chat & Graph]
+```
+
 ## Ports & Networking
 
 - **Backend** defaults to `8002`. Change `API_PORT` in `backend/.env` if needed. Frontend env (`VITE_API_URL`) must match.

@@ -19,22 +19,32 @@ The project combines a FastAPI backend powered by LightRAG with a SvelteKit fron
 
 ## System Architecture
 
+```mermaid
+graph TD
+    subgraph Frontend
+        FE[SvelteKit UI]
+    end
+    subgraph Backend
+        BE[FastAPI API]
+        GM[Graph Manager]
+        LW[LightRAG Wrapper]
+    end
+    subgraph LightRAG
+        LR[LightRAG Core]
+        KG[(GraphML Store)]
+        VS[(Vector Stores)]
+    end
+
+    User((User)) --> FE
+    FE -->|REST + WS| BE
+    BE --> LW
+    LW --> LR
+    LR --> KG
+    LR --> VS
+    BE --> GM
+    GM --> FE
 ```
-┌─────────────┐      REST / WebSocket       ┌─────────────┐
-│  SvelteKit  │◀──────────────────────────▶│   FastAPI   │
-│  Frontend   │                            │   Backend   │
-└──────┬──────┘                            └──────┬──────┘
-       │   Graph + Chat Stores                    │
-       │                                           │
-       │                                   ┌───────▼────────┐
-       │                                   │  LightRAG      │
-       │                                   │  Knowledge     │
-       │                                   │  Graph + RAG   │
-       │                                   └───────┬────────┘
-       │                                           │
-       │                GraphML / Vector Stores    │
-       └───────────────────────────────────────────┘
-```
+
 
 Key responsibilities:
 

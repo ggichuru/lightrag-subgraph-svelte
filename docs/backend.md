@@ -54,6 +54,72 @@ Keep `.env` out of version control. Copy `backend/.env.example` as a starting po
 All LightRAG errors are logged. Unexpected exceptions get wrapped into `RuntimeError("LightRAG query failed")`, allowing API routes to surface clean HTTP 500 responses without leaking stack traces to the client.
 
 ## Graph Manager (`core/graph_manager.py`)
+### Subgraph & Query Pipeline
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as /api/query
+    participant Wrapper as LightRAGWrapper
+    participant LightRAG
+    participant GM as GraphManager
+
+    User->>API: Query + conversation history
+    API->>Wrapper: query()
+    Wrapper->>LightRAG: aquery(QueryParam)
+    LightRAG-->>Wrapper: Answer + raw context
+    Wrapper-->>API: Response text, elapsed time
+    API->>GM: extract_entities(query, response)
+    GM->>GM: Apply temporal decay & update stats
+    GM->>GM: build_contextual_subgraph(focal entities)
+    GM-->>API: Nodes + links payload
+    API-->>User: Chat answer + contextual subgraph
+```
+
+The end-to-end flow ties LightRAG and the graph manager together so every answer is paired with a visual explanation.
+
+### Entity Harvesting
+
+1. **LightRAG metadata** — Document ingestion stores entities and relations. After ingestion completes the wrapper calls `get_graph_labels()` to refresh an in-memory cache of known labels.
+2. **Query-time extraction** — Once a response arrives, `GraphManager.extract_entities()` scans the query and response text for those labels (case-insensitive). You can plug in fuzzy or NER logic here.
+3. **Frequency & recency** — Each mentioned entity increments a counter and `entity_last_seen` timestamp. `apply_temporal_decay()` gradually lowers scores for stale topics using the configured decay rate.
+
+### Subgraph Construction (`build_contextual_subgraph`)
+
+```mermaid
+graph TD
+    A[Focal Entities] --> B{Present in Graph?}
+    B -->|Yes| C[Collect ego graph up to MAX_HOPS]
+    B -->|No| D[Fallback to top centrality nodes]
+    C --> E[Score nodes: freq + recency + centrality + focal bonus]
+    D --> E
+    E --> F[Sort & keep top MAX_GRAPH_NODES]
+    F --> G[Ensure connectivity shortest paths]
+    G --> H[Return trimmed NetworkX subgraph]
+```
+
+- **Ego expansion** keeps neighbourhoods tight and computationally cheap.
+- **Importance scoring** combines normalised frequency, exponential recency decay, cached PageRank and a focal-entity bonus.
+- **Connectivity guard** brings in the shortest path between disconnected focal clusters so the graph doesn’t fracture visually.
+
+### Visual Payload
+
+`graph_to_vis_format()` converts the NetworkX subgraph into the JSON structure consumed by the frontend:
+
+- Node `size` is derived from the importance score (8px base + scaled weight).
+- `color` and `type` come from graph metadata (`entity_type`, `label`, etc.).
+- Flags such as `is_focal`, `frequency`, and `centrality` let the UI highlight context.
+- Edges carry `relationship`, `keywords`, and `weight` fields that D3 uses for styling.
+
+### When LightRAG Returns Empty Context
+
+If LightRAG can’t find relevant chunks (zero entities/relations):
+
+- The wrapper logs the situation and returns an empty string.
+- The graph manager falls back to the most central nodes so the canvas isn’t blank.
+- You can customise this behaviour (e.g., surface a “no evidence found” message or prompt for ingestion).
+
+
 
 Responsibilities:
 

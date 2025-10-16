@@ -22,6 +22,38 @@ frontend/
 └── vite.config.js             # Vite settings + backend proxy
 ```
 
+## Component Overview
+
+```mermaid
+graph LR
+    Page[+page.svelte] --> Chat[ChatPanel]
+    Page --> Graph[GraphPanel]
+    Page --> Upload[DocumentUpload]
+    Page --> Stats[GraphStats]
+    Page --> Toggle[ViewToggle]
+    Chat --> Messages[messages store]
+    Chat --> Loading[isLoading store]
+    Graph --> GraphData[graphData store]
+    Stats --> StatsStore[stats store]
+    Upload --> IngestStatus[ingestStatus store]
+    Toggle --> ViewMode[viewMode store]
+```
+
+## Client Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Svelte Components
+    participant Stores
+    participant API as fetch/WebSocket
+    User->>UI: Interact (ask, upload, toggle)
+    UI->>Stores: Update writable stores
+    UI->>API: sendQuery / upload / startIngestion
+    API-->>Stores: Responses, graph, status
+    Stores-->>UI: Reactive updates (chat, graph, stats)
+```
+
 ## Key Concepts
 
 ### State Management (`lib/stores/app.js`)

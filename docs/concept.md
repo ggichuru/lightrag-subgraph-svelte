@@ -12,6 +12,97 @@ Traditional Retrieval-Augmented Generation (RAG) systems feel like black boxes: 
 
 That visibility builds trust, helps with debugging content gaps, and turns the system into a learning tool—users can literally watch the graph evolve as topics change.
 
+## See the Forest (What & Why)
+
+The original intention of this project was simple: **let people chat with their documents and simultaneously watch the reasoning graph breathe in front of them**. To honour that, we paint the whole forest before zooming into individual trees.
+
+```mermaid
+graph TD
+    A[User Question] --> B[FastAPI Gateway]
+    B --> C[LightRAG Hybrid Retrieval]
+    C --> D[Knowledge Graph Store]
+    D --> E[Contextual Subgraph]
+    E --> F[Chat Response]
+    E --> G[Graph Visualisation]
+    G --> H[User Insight]
+    H --> I[Trust & Learning]
+```
+
+*Forest view:* a question flows through the gateway, LightRAG consults the forest of knowledge, and the answer returns with a highlighted cluster so the user sees **both the tree and the forest**.
+
+## Walk Between the Trees (How it Moves)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as SvelteKit UI
+    participant BE as FastAPI Backend
+    participant LR as LightRAG
+    participant G as Graph Manager
+
+    U->>FE: Ask question / Upload document
+    FE->>BE: REST / WebSocket message
+    BE->>LR: aquery() or ainsert()
+    LR-->>BE: Answer + graph state
+    BE->>G: Build contextual subgraph
+    G-->>BE: Nodes + edges + stats
+    BE-->>FE: Response payload
+    FE-->>U: Chat update + animated graph
+```
+
+Each stop in the sequence is one step closer to the canopy or the roots. The UI keeps the conversation flowing; the backend composes LightRAG’s answer with graph context so the user never loses sight of neighbouring branches.
+
+## Where Everything Lives (Structure)
+
+```mermaid
+graph LR
+    subgraph Frontend_SvelteKit
+        A1[Chat Panel]
+        A2[Graph Panel]
+        A3[Stats & Uploads]
+        A4[Svelte Stores]
+    end
+    subgraph Backend_FastAPI
+        B1[API Routes]
+        B2[WebSocket]
+        B3[Graph Manager]
+        B4[LightRAG Wrapper]
+    end
+    subgraph LightRAG_Core
+        C1[Vector Stores]
+        C2[Knowledge Graph]
+        C3[Embeddings & LLM]
+    end
+
+    A1 <--> B1
+    A1 <--> B2
+    A2 <--> B3
+    B4 <--> C2
+    B4 <--> C1
+    B4 <--> C3
+```
+
+The **where**: frontend and backend dance together, while LightRAG tends the forest floor (graph, vectors, embeddings). The Graph Manager is the ranger who decides which clearing to spotlight.
+
+## Why It Matters (Value Flow)
+
+```mermaid
+flowchart TD
+    Start((Why RAG?)) --> Transparency[Expose reasoning paths]
+    Start --> Velocity[Speed up discovery]
+    Start --> Trust[Ground answers in evidence]
+    Transparency --> Insight[Show graph context]
+    Velocity --> Flow[Keep conversation moving]
+    Trust --> Adoption[Users believe what they see]
+    Insight --> Learning
+    Flow --> Engagement
+    Adoption --> Learning
+    Learning --> NextQuestions{Better questions}
+    NextQuestions --> Transparency
+```
+
+Seeing the reasoning makes people ask better questions, which in turn illuminates more of the forest. That virtuous loop is the heart of the experience.
+
 ## What the UI Shows
 
 - **Chat Panel**: a standard conversational interface with a mode switch (naive/local/global/hybrid/mix), entity badges beneath each message, and live status while LightRAG works.
