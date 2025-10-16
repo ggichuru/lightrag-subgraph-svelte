@@ -1,0 +1,66 @@
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# === Package Manager Lock Files (keep only one) ===
+# Uncomment based on your package manager:
+# yarn.lock
+# pnpm-lock.yaml
+# bun.lockb
+
+# === Build Output ===
+dist/
+build/
+.output/
+.svelte-kit/
+.vercel/
+.netlify/
+.cache/
+
+# === Environment Variables ===
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# === Testing ===
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# === Vite ===
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# === TypeScript ===
+*.tsbuildinfo
+
+# === Svelte ===
+.svelte-kit/
+__sapper__/
+
+# === Static Assets (generated) ===
+static/generated/
+static/build/
+
+# === IDE ===
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Misc ===
+*.log
+.turbo/
+.vercel/
+
